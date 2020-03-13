@@ -1,51 +1,88 @@
 package com.kiowa.bluetoothlocatability
 
-import android.app.IntentService
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.le.BluetoothLeScanner
-import android.bluetooth.le.ScanCallback
-import android.bluetooth.le.ScanResult
-import android.content.Intent
-import android.os.Bundle
-import android.util.Log
 
-class BluetoothLeService(name: String?) : IntentService(name) {
+import android.app.Service
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.le.*
+import android.content.Intent
+import android.os.IBinder
+import android.util.Log
+import com.kiowa.bluetoothlocatability.triangulationMethods.CellTowerTrilateration
+
+
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
+
+
+class BluetoothLeService : Service() {
+
+
+
     private lateinit var bluetoothAdapter: BluetoothAdapter
     private lateinit var bluetoothLeScanner: BluetoothLeScanner
+    private val radius  = (5.0)
     private val formulas = Formulas()
+    private var hashMap  = HashMap<String,ArrayList<Double>>()
+    private lateinit var beacons : HashMap<String,FloatArray>
 
-    override fun onHandleIntent(intent: Intent?) {
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-        bluetoothLeScanner = bluetoothAdapter.bluetoothLeScanner
-        bluetoothLeScanner.startScan(scanCallback)
-        Log.i("BLE","HANDLEiNTENT")
+
+    override fun onBind(intent: Intent?): IBinder? {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        @Suppress("UNCHECKED_CAST")
+        beacons = (intent?.getSerializableExtra("Beacons") as HashMap<String, FloatArray>)
+        Log.i("BLE","Service accessed")
+        Log.i("BLE", "Attempting to start scan")
+        for((k,v) in beacons){
+            Log.i("BLE BEACONS",k + " -> (" + v[0] + "," + v[1]+")")
+        }
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+
+        bluetoothLeScanner = bluetoothAdapter.bluetoothLeScanner
+        val filter = ScanFilter.Builder().setDeviceName(null).build()
+        val settings = ScanSettings.Builder()
+            .setScanMode(ScanSettings.SCAN_MODE_LOW_POWER)
+            .setReportDelay(1)
+            .build()
+
+        val filters = ArrayList<ScanFilter>()
+        filters.add(filter)
+
+        bluetoothLeScanner.startScan(filters,settings,scanCallback)
+        findClosest()
+
+        //
+
+        return START_STICKY
+    }
+    override fun onDestroy() {
+        bluetoothLeScanner.stopScan(scanCallback)
+        Log.i("BLE","Scan stopped ")
+    }
+
+
     private val scanCallback = object : ScanCallback() {
+
         override fun onScanResult(callbackType: Int, result: ScanResult) {
-//            val n = 4
-//            var distance = 0.0
-//            for (i in 0 until n) {
-//                val rssi = result.rssi.toDouble()
-//                val measuredPower = result.txPower.toDouble()
-//                distance += formulas.rssiDistanceFormula(rssi, measuredPower)
-//            }
-//            distance /= n
-//            val myBroadcast = Intent()
-//            myBroadcast.action = "DEVICE NEARBY!"
-//            val bundle = Bundle()
-//            bundle.putDouble("Distance", distance)
-//            bundle.putString("Beacon Name", result.device.name)
-//            myBroadcast.putExtra("Distance", distance)
-//            sendBroadcast(myBroadcast)
+            super.onScanResult(callbackType, result)
             Log.i("BLE_DETECTED",result.device.name)
         }
 
         override fun onBatchScanResults(results: List<ScanResult>) {
             super.onBatchScanResults(results)
-            //Do the triangulation in here! and return the closest device
-            for (result in results){
-                Log.i("BLE_DETECTED",result.device.name)
+            for (result: ScanResult in results){
+                val name = result.device.name
+                if(name != null){
+                    Log.i("BLE_DETECTED",name)
+                    val distance = formulas.rssiDistanceFormula(result.rssi.toDouble(), result.txPower.toDouble())
+                    if(!hashMap.containsKey(name)){
+                        hashMap[name] = ArrayList()
+                    }
+                    hashMap[name]?.add(distance)
+                }
             }
         }
 
@@ -55,13 +92,58 @@ class BluetoothLeService(name: String?) : IntentService(name) {
         }
     }
 
-    /**
-     * The required methods for a service
-     *
-     *
-     *
-     *
-     *
-     */
+    private fun sendClosestDeviceBroadcast(string:String, deviceName:String){
+        val intent = Intent("com.kgrjj.kiowa_daly_fyp.WithinRadius")
+        intent.putExtra("com.kiowa.EXTRA_TEXT",string)
+        intent.putExtra("DeviceName",deviceName)
+        sendBroadcast(intent)
+        Log.i("BLE","broadcast sent")
+    }
+
+    private fun findClosest(){
+        val timer = Timer()
+        timer.scheduleAtFixedRate(object : TimerTask(){
+            override fun run() {
+                var closestVal = Double.MAX_VALUE
+                var closest = ""
+
+                for((k,v) in hashMap){
+                    val averageVal = v.average()
+                    if(averageVal < closestVal){
+                        closestVal = averageVal
+                        closest = k
+                    }
+                }
+                if(hashMap.size >=3){
+                    getLocation()
+                }else{
+                    Log.i("BLE","Not Enough Beacons to find location!")
+                }
+
+                if(closestVal < radius){
+                    sendClosestDeviceBroadcast("You are in the:$closest",closest)
+                    hashMap.clear()
+                }else{
+                    sendClosestDeviceBroadcast("Searching for nearby device....","no device found")
+                }
+            }
+        },0,3000)
+    }
+
+    private fun getLocation(){
+        val pairs = HashMap<String,Pair<FloatArray,Double>>()
+
+            for((k,v) in hashMap){
+                if(beacons.containsKey(k)) pairs[k] = Pair(beacons[k]!!,v.average())
+            }
+//            val c = Centroid(pairs)
+            val cellTower = CellTowerTrilateration(pairs)
+            val intent = Intent("com.kgrjj.kiowa_daly_fyp.CurrentLocation")
+//            val current = c.findCurrentPointF()
+            val current = cellTower.trilaterate()
+            intent.putExtra("com.kiowa.CURRENT_LOCATION",current)
+            sendBroadcast(intent)
+            Log.i("BLE","broadcast sent")
+    }
 
 }
