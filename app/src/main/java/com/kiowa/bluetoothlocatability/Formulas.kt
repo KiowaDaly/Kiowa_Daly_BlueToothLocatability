@@ -12,7 +12,6 @@ class Formulas {
      * @param txPower
      * @author Kiowa Daly
      * @return Double
-     *
      */
     fun rssiDistanceFormula(rssi: Double, txPower: Double): Double {
         //d = 10 ^ ((txPower-Rssi) / 10n) (n ranges from 2 to 4)
