@@ -1,5 +1,6 @@
 package com.kiowa.bluetoothlocatability.triangulationMethods
 
+import android.util.Log
 import kotlin.math.pow
 
 
@@ -18,10 +19,20 @@ class CellTowerTrilateration(beacons : HashMap<String,Pair<FloatArray, Double>>)
      * Current location = intersection point of the 3 triangles
      */
     fun trilaterate()  : FloatArray{
+
+        Log.i("BLE","all beacons + distance ->\n")
+        for(b in listedBeacons){
+
+            Log.i("BLE",b.first+": ("+b.second.first[0]+","+b.second.first[1]+") and distance ="+b.second.second)
+        }
+
         //get closest 3
         val clostest3 =
             listedBeacons.sortedByDescending { it.second.second }.takeLast(3)
-
+        Log.i("BLE","Closest 3 ->")
+        for(b in clostest3){
+            Log.i("BLE",b.first+": ("+b.second.first[0]+","+b.second.first[1]+") and distance ="+b.second.second)
+        }
 
         val x1= clostest3[0].second.first[0]
         val y1= clostest3[0].second.first[1]
