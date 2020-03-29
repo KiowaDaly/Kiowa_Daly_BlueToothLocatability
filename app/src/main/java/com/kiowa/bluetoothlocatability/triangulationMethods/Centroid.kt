@@ -22,7 +22,7 @@ class Centroid(b : HashMap<String,Pair<FloatArray, Double>>) {
         var bottomY = 0.0f
 
 
-        for((k,v) in beacons){
+        for((_,v) in beacons){
             topX+=(v.first[0] * v.second.toFloat())
             topY+=(v.first[1] * v.second.toFloat())
             bottomX += v.second.toFloat()

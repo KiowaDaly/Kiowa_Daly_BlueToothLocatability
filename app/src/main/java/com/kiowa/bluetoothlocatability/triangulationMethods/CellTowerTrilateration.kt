@@ -8,7 +8,7 @@ import kotlin.math.pow
  * https://www.101computing.net/cell-phone-trilateration-algorithm/
  *
  */
-class CellTowerTrilateration(beacons : HashMap<String,Pair<FloatArray, Double>>){
+class CellTowerTrilateration(beacons : HashMap<String,Pair<DoubleArray, Double>>){
     private var listedBeacons = beacons.toList()
 
 
@@ -18,7 +18,7 @@ class CellTowerTrilateration(beacons : HashMap<String,Pair<FloatArray, Double>>)
      * Each of the 3 beacons have a circle surrounding them and the radius = distance from current position
      * Current location = intersection point of the 3 triangles
      */
-    fun trilaterate()  : FloatArray{
+    fun trilaterate()  : DoubleArray{
 
         Log.i("BLE","all beacons + distance ->\n")
         for(b in listedBeacons){
@@ -34,6 +34,7 @@ class CellTowerTrilateration(beacons : HashMap<String,Pair<FloatArray, Double>>)
             Log.i("BLE",b.first+": ("+b.second.first[0]+","+b.second.first[1]+") and distance ="+b.second.second)
         }
 
+        //setting up the helper variables
         val x1= clostest3[0].second.first[0]
         val y1= clostest3[0].second.first[1]
         val r1= clostest3[0].second.second.toFloat()
@@ -49,12 +50,12 @@ class CellTowerTrilateration(beacons : HashMap<String,Pair<FloatArray, Double>>)
         //Calculate the current position using distance as radius
         val a = 2*x2 -2*x1
         val b = 2*y2 - 2*y1
-        val c = (r1.pow(2) - r2.pow(2) - x1.pow(2) + x2.pow(2) - y1.pow(2) +y2.pow(2)).toFloat()
+        val c = (r1.pow(2) - r2.pow(2) - x1.pow(2) + x2.pow(2) - y1.pow(2) +y2.pow(2))
         val d = 2*x3 - 2*x2
         val e = 2*y3 - 2*y2
-        val f = (r2.pow(2) - r3.pow(2) - x2.pow(2) + x3.pow(2) - y2.pow(2) +y3.pow(2)).toFloat()
+        val f = (r2.pow(2) - r3.pow(2) - x2.pow(2) + x3.pow(2) - y2.pow(2) +y3.pow(2))
         val x = (c*e - f*b) / (e*a - b*d)
         val y = (c*d - a*f) / (b*d - a*e)
-        return floatArrayOf(x,y)
+        return doubleArrayOf(x,y)
     }
 }

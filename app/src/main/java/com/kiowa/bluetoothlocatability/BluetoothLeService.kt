@@ -19,7 +19,7 @@ class BluetoothLeService : Service() {
     private val radius  = (5.0)
     private val formulas = Formulas()
     private var hashMap  = HashMap<String,ArrayList<Double>>()
-    private lateinit var beacons : HashMap<String,FloatArray>
+    private lateinit var beacons : HashMap<String,DoubleArray>
     private val aggregateRoute : ArrayList<FloatArray> = ArrayList()
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -28,7 +28,7 @@ class BluetoothLeService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         @Suppress("UNCHECKED_CAST")
-        beacons = (intent?.getSerializableExtra("Beacons") as HashMap<String, FloatArray>)
+        beacons = (intent?.getSerializableExtra("Beacons") as HashMap<String, DoubleArray>)
 
         Log.i("BLE","Service accessed")
         Log.i("BLE", "Attempting to start scan")
@@ -59,37 +59,7 @@ class BluetoothLeService : Service() {
         Log.i("BLE","Scan stopped ")
     }
 
-    private val scanCallback = object : ScanCallback() {
 
-        override fun onScanResult(callbackType: Int, result: ScanResult) {
-            super.onScanResult(callbackType, result)
-            Log.i("BLE_DETECTED",result.device.name)
-        }
-
-        /**
-         * Function retrieves scan results, makes sure that they don't have null names
-         * and then stores them in a hashmap with the distance as value
-         */
-        override fun onBatchScanResults(results: List<ScanResult>) {
-            super.onBatchScanResults(results)
-            for (result: ScanResult in results){
-                val name = result.device.name
-                if(name != null){
-                    Log.i("BLE_DETECTED",name)
-                    val distance = formulas.rssiDistanceFormula(result.rssi.toDouble(), result.txPower.toDouble())
-                    if(!hashMap.containsKey(name)){
-                        hashMap[name] = ArrayList()
-                    }
-                    hashMap[name]?.add(distance)
-                }
-            }
-        }
-
-        override fun onScanFailed(errorCode: Int) {
-            super.onScanFailed(errorCode)
-            Log.i("BLE_SCAN","failed")
-        }
-    }
 
     private fun findClosest(){
         val timer = Timer()
@@ -122,7 +92,7 @@ class BluetoothLeService : Service() {
     }
 
     private fun getLocation(){
-        val pairs = HashMap<String,Pair<FloatArray,Double>>()
+        val pairs = HashMap<String,Pair<DoubleArray,Double>>()
 
             for((k,v) in hashMap){
                 if(beacons.containsKey(k)) pairs[k] = Pair(beacons[k]!!,v.average())
@@ -139,6 +109,7 @@ class BluetoothLeService : Service() {
 
     }
 
+
     private fun sendClosestDeviceBroadcast(string:String, deviceName:String){
         val intent = Intent("com.kgrjj.kiowa_daly_fyp.WithinRadius")
         intent.putExtra("com.kiowa.EXTRA_TEXT",string)
@@ -146,5 +117,50 @@ class BluetoothLeService : Service() {
         sendBroadcast(intent)
         Log.i("BLE","broadcast sent")
     }
+
+
+
+
+    // Callbacks
+
+    /**
+     *
+     */
+    private val scanCallback = object : ScanCallback() {
+
+        override fun onScanResult(callbackType: Int, result: ScanResult) {
+            super.onScanResult(callbackType, result)
+            Log.i("BLE_DETECTED",result.device.name)
+        }
+
+        /**
+         * Function retrieves scan results, makes sure that they don't have null names
+         * and then stores them in a hashmap with the distance as value
+         */
+        override fun onBatchScanResults(results: List<ScanResult>) {
+            super.onBatchScanResults(results)
+            for (result: ScanResult in results){
+                val name = result.device.name
+                if(name != null){
+                    Log.i("BLE_DETECTED",name)
+                    val distance = formulas.rssiDistanceFormula(result.rssi.toDouble(), result.txPower.toDouble())
+                    if(!hashMap.containsKey(name)){
+                        hashMap[name] = ArrayList()
+                    }
+                    hashMap[name]?.add(distance)
+                }
+            }
+        }
+
+        override fun onScanFailed(errorCode: Int) {
+            super.onScanFailed(errorCode)
+            Log.i("BLE_SCAN","failed")
+        }
+    }
+
+    /**
+     *
+     */
+
 
 }
