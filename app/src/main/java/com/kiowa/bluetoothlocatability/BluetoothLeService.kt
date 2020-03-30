@@ -20,7 +20,7 @@ class BluetoothLeService : Service() {
     private val formulas = Formulas()
     private var hashMap  = HashMap<String,ArrayList<Double>>()
     private lateinit var beacons : HashMap<String,DoubleArray>
-    private val aggregateRoute : ArrayList<FloatArray> = ArrayList()
+    private val aggregateRoute : ArrayList<DoubleArray> = ArrayList()
 
     override fun onBind(intent: Intent?): IBinder? {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
