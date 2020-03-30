@@ -48,14 +48,14 @@ class CellTowerTrilateration(beacons : HashMap<Int,Pair<DoubleArray, Double>>){
         val r3= clostest3[2].second.second
 
         //Calculate the current position using distance as radius
-        val a = 2*x2 -2*x1
-        val b = 2*y2 - 2*y1
+        val a = (2*x2) -(2*x1)
+        val b = (2*y2) - (2*y1)
         val c = (r1.pow(2) - r2.pow(2) - x1.pow(2) + x2.pow(2) - y1.pow(2) +y2.pow(2))
-        val d = 2*x3 - 2*x2
-        val e = 2*y3 - 2*y2
+        val d = (2*x3) - (2*x2)
+        val e = (2*y3) - (2*y2)
         val f = (r2.pow(2) - r3.pow(2) - x2.pow(2) + x3.pow(2) - y2.pow(2) +y3.pow(2))
-        val x = (c*e - f*b) / (e*a - b*d)
-        val y = (c*d - a*f) / (b*d - a*e)
+        val x = ((c*e) - (f*b)) / ((e*a) - (b*d))
+        val y = ((c*d) - (a*f)) / ((b*d) - (a*e))
         return doubleArrayOf(x,y)
     }
 }
