@@ -8,7 +8,7 @@ import kotlin.math.pow
  * https://www.101computing.net/cell-phone-trilateration-algorithm/
  *
  */
-class CellTowerTrilateration(beacons : HashMap<String,Pair<DoubleArray, Double>>){
+class CellTowerTrilateration(beacons : HashMap<Int,Pair<DoubleArray, Double>>){
     private var listedBeacons = beacons.toList()
 
 
@@ -23,7 +23,7 @@ class CellTowerTrilateration(beacons : HashMap<String,Pair<DoubleArray, Double>>
         Log.i("BLE","all beacons + distance ->\n")
         for(b in listedBeacons){
 
-            Log.i("BLE",b.first+": ("+b.second.first[0]+","+b.second.first[1]+") and distance ="+b.second.second)
+            Log.i("BLE","Beacon"+b.first+": ("+b.second.first[0]+","+b.second.first[1]+") and distance ="+b.second.second)
         }
 
         //get closest 3
@@ -31,21 +31,21 @@ class CellTowerTrilateration(beacons : HashMap<String,Pair<DoubleArray, Double>>
             listedBeacons.sortedByDescending { it.second.second }.takeLast(3)
         Log.i("BLE","Closest 3 ->")
         for(b in clostest3){
-            Log.i("BLE",b.first+": ("+b.second.first[0]+","+b.second.first[1]+") and distance ="+b.second.second)
+            Log.i("BLE","Beacon"+b.first+": ("+b.second.first[0]+","+b.second.first[1]+") and distance ="+b.second.second)
         }
 
         //setting up the helper variables
         val x1= clostest3[0].second.first[0]
         val y1= clostest3[0].second.first[1]
-        val r1= clostest3[0].second.second.toFloat()
+        val r1= clostest3[0].second.second
 
         val x2= clostest3[1].second.first[0]
         val y2= clostest3[1].second.first[1]
-        val r2= clostest3[1].second.second.toFloat()
+        val r2= clostest3[1].second.second
 
         val x3= clostest3[2].second.first[0]
         val y3= clostest3[2].second.first[1]
-        val r3= clostest3[2].second.second.toFloat()
+        val r3= clostest3[2].second.second
 
         //Calculate the current position using distance as radius
         val a = 2*x2 -2*x1

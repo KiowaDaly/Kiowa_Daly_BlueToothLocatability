@@ -16,10 +16,10 @@ class BluetoothLeService : Service() {
 
     private lateinit var bluetoothAdapter: BluetoothAdapter
     private lateinit var bluetoothLeScanner: BluetoothLeScanner
-    private val radius  = (5.0)
+    private val radius  = 6.0
     private val formulas = Formulas()
-    private var hashMap  = HashMap<String,ArrayList<Double>>()
-    private lateinit var beacons : HashMap<String,DoubleArray>
+    private var hashMap  = HashMap<Int,ArrayList<Double>>()
+    private lateinit var beacons : HashMap<Int,DoubleArray>
     private val aggregateRoute : ArrayList<DoubleArray> = ArrayList()
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -28,13 +28,12 @@ class BluetoothLeService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         @Suppress("UNCHECKED_CAST")
-        beacons = (intent?.getSerializableExtra("Beacons") as HashMap<String, DoubleArray>)
-
+        beacons = (intent?.getSerializableExtra("Beacons") as HashMap<Int, DoubleArray>)
         Log.i("BLE","Service accessed")
         Log.i("BLE", "Attempting to start scan")
 
         for((k,v) in beacons){
-            Log.i("BLE BEACONS",k + " -> (" + v[0] + "," + v[1]+")")
+            Log.i("BLE BEACONS","Beacon" + k + " -> (" + v[0] + "," + v[1]+")")
         }
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
@@ -66,7 +65,7 @@ class BluetoothLeService : Service() {
         timer.scheduleAtFixedRate(object : TimerTask(){
             override fun run() {
                 var closestVal = Double.MAX_VALUE
-                var closest = ""
+                var closest = 0
 
                 for((k,v) in hashMap){
                     val averageVal = v.average()
@@ -85,15 +84,15 @@ class BluetoothLeService : Service() {
                     sendClosestDeviceBroadcast("You are in the:$closest",closest)
                     hashMap.clear()
                 }else{
-                    sendClosestDeviceBroadcast("Searching for nearby device....","no device found")
+                    sendClosestDeviceBroadcast("Searching for nearby device....",0)
                 }
             }
         },0,2000)
     }
 
     private fun getLocation(){
-        val pairs = HashMap<String,Pair<DoubleArray,Double>>()
-
+        val pairs = HashMap<Int,Pair<DoubleArray,Double>>()
+        //added this for change
             for((k,v) in hashMap){
                 if(beacons.containsKey(k)) pairs[k] = Pair(beacons[k]!!,v.average())
             }
@@ -110,7 +109,7 @@ class BluetoothLeService : Service() {
     }
 
 
-    private fun sendClosestDeviceBroadcast(string:String, deviceName:String){
+    private fun sendClosestDeviceBroadcast(string:String, deviceName:Int){
         val intent = Intent("com.kgrjj.kiowa_daly_fyp.WithinRadius")
         intent.putExtra("com.kiowa.EXTRA_TEXT",string)
         intent.putExtra("DeviceName",deviceName)
@@ -140,9 +139,9 @@ class BluetoothLeService : Service() {
         override fun onBatchScanResults(results: List<ScanResult>) {
             super.onBatchScanResults(results)
             for (result: ScanResult in results){
-                val name = result.device.name
-                if(name != null){
-                    Log.i("BLE_DETECTED",name)
+                val name = result.device.name.toInt()
+                if(name != 0){
+                    Log.i("BLE_DETECTED","Beacon" + name)
                     val distance = formulas.rssiDistanceFormula(result.rssi.toDouble(), result.txPower.toDouble())
                     if(!hashMap.containsKey(name)){
                         hashMap[name] = ArrayList()
