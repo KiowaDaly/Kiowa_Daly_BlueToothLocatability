@@ -139,8 +139,9 @@ class BluetoothLeService : Service() {
         override fun onBatchScanResults(results: List<ScanResult>) {
             super.onBatchScanResults(results)
             for (result: ScanResult in results){
-                val name = result.device.name.toInt()
-                if(name != 0){
+                var n = result.device.name
+                if(n != null){
+                    val name = n.toInt()
                     Log.i("BLE_DETECTED","Beacon" + name)
                     val distance = formulas.rssiDistanceFormula(result.rssi.toDouble(), result.txPower.toDouble())
                     if(!hashMap.containsKey(name)){
