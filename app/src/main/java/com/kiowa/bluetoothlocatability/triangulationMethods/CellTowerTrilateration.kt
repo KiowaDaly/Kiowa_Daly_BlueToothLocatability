@@ -1,6 +1,8 @@
 package com.kiowa.bluetoothlocatability.triangulationMethods
 
 import android.util.Log
+import com.kiowa.bluetoothlocatability.utilities.BeaconData
+import com.kiowa.bluetoothlocatability.utilities.BeaconScreenPoint
 import kotlin.math.pow
 
 
@@ -8,8 +10,8 @@ import kotlin.math.pow
  * https://www.101computing.net/cell-phone-trilateration-algorithm/
  *
  */
-class CellTowerTrilateration(beacons : HashMap<Int,Pair<DoubleArray, Double>>){
-    private var listedBeacons = beacons.toList()
+class CellTowerTrilateration(private val beacons: ArrayList<BeaconData>) {
+
 
 
     /**
@@ -18,34 +20,42 @@ class CellTowerTrilateration(beacons : HashMap<Int,Pair<DoubleArray, Double>>){
      * Each of the 3 beacons have a circle surrounding them and the radius = distance from current position
      * Current location = intersection point of the 3 triangles
      */
-    fun trilaterate()  : DoubleArray{
-
+    fun trilaterate(): BeaconScreenPoint {
+        //region debug messages1 TODO REMOVE
         Log.i("BLE","all beacons + distance ->\n")
-        for(b in listedBeacons){
+        for (b in beacons) {
 
-            Log.i("BLE","Beacon"+b.first+": ("+b.second.first[0]+","+b.second.first[1]+") and distance ="+b.second.second)
+            Log.i(
+                "BLE",
+                "Beacon" + b.beaconID + ": (" + b.coordinates.x + "," + b.coordinates.y + ") and distance =" + b.distance
+            )
         }
+        //endregion
 
-        //get closest 3
-        val clostest3 =
-            listedBeacons.sortedByDescending { it.second.second }.takeLast(3)
+        //get closest 3, since they will have the most influence an relevancy of the location
+        val closest3 =
+            beacons.sortedByDescending { it.distance }.takeLast(3)
+        //region debug2 TODO REMOVE
         Log.i("BLE","Closest 3 ->")
-        for(b in clostest3){
-            Log.i("BLE","Beacon"+b.first+": ("+b.second.first[0]+","+b.second.first[1]+") and distance ="+b.second.second)
+        for (b in closest3) {
+            Log.i(
+                "BLE",
+                "Beacon" + b.beaconID + ": (" + b.coordinates.x + "," + b.coordinates.y + ") and distance =" + b.distance
+            )
         }
-
+        //endregion
         //setting up the helper variables
-        val x1= clostest3[0].second.first[0]
-        val y1= clostest3[0].second.first[1]
-        val r1= clostest3[0].second.second
+        val x1 = closest3[0].coordinates.x
+        val y1 = closest3[0].coordinates.y
+        val r1 = closest3[0].distance
 
-        val x2= clostest3[1].second.first[0]
-        val y2= clostest3[1].second.first[1]
-        val r2= clostest3[1].second.second
+        val x2 = closest3[1].coordinates.x
+        val y2 = closest3[1].coordinates.y
+        val r2 = closest3[1].distance
 
-        val x3= clostest3[2].second.first[0]
-        val y3= clostest3[2].second.first[1]
-        val r3= clostest3[2].second.second
+        val x3 = closest3[2].coordinates.x
+        val y3 = closest3[2].coordinates.y
+        val r3 = closest3[2].distance
 
         //Calculate the current position using distance as radius
         val a = (2*x2) -(2*x1)
@@ -56,6 +66,6 @@ class CellTowerTrilateration(beacons : HashMap<Int,Pair<DoubleArray, Double>>){
         val f = (r2.pow(2) - r3.pow(2) - x2.pow(2) + x3.pow(2) - y2.pow(2) +y3.pow(2))
         val x = ((c*e) - (f*b)) / ((e*a) - (b*d))
         val y = ((c*d) - (a*f)) / ((b*d) - (a*e))
-        return doubleArrayOf(x,y)
+        return BeaconScreenPoint(x, y)
     }
 }
