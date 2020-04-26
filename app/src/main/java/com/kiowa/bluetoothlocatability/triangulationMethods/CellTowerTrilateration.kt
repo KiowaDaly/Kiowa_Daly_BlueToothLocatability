@@ -3,6 +3,7 @@ package com.kiowa.bluetoothlocatability.triangulationMethods
 import android.util.Log
 import com.kiowa.bluetoothlocatability.utilities.BeaconData
 import com.kiowa.bluetoothlocatability.utilities.BeaconScreenPoint
+import com.kiowa.bluetoothlocatability.utilities.Constants
 import kotlin.math.pow
 
 
@@ -22,11 +23,11 @@ class CellTowerTrilateration(private val beacons: ArrayList<BeaconData>) {
      */
     fun trilaterate(): BeaconScreenPoint {
         //region debug messages1 TODO REMOVE
-        Log.i("BLE","all beacons + distance ->\n")
+        Log.i(Constants.TRILATERATION, "all beacons + distance ->\n")
         for (b in beacons) {
 
             Log.i(
-                "BLE",
+                Constants.TRILATERATION,
                 "Beacon" + b.beaconID + ": (" + b.coordinates.x + "," + b.coordinates.y + ") and distance =" + b.distance
             )
         }
@@ -36,10 +37,10 @@ class CellTowerTrilateration(private val beacons: ArrayList<BeaconData>) {
         val closest3 =
             beacons.sortedByDescending { it.distance }.takeLast(3)
         //region debug2 TODO REMOVE
-        Log.i("BLE","Closest 3 ->")
+        Log.i(Constants.TRILATERATION, "Closest 3 ->")
         for (b in closest3) {
             Log.i(
-                "BLE",
+                Constants.TRILATERATION,
                 "Beacon" + b.beaconID + ": (" + b.coordinates.x + "," + b.coordinates.y + ") and distance =" + b.distance
             )
         }

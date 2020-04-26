@@ -11,6 +11,7 @@ import android.util.Log
 import com.kiowa.bluetoothlocatability.triangulationMethods.CellTowerTrilateration
 import com.kiowa.bluetoothlocatability.utilities.BeaconData
 import com.kiowa.bluetoothlocatability.utilities.BeaconScreenPoint
+import com.kiowa.bluetoothlocatability.utilities.Constants
 
 
 class BluetoothLeService : Service() {
@@ -71,7 +72,7 @@ class BluetoothLeService : Service() {
 
     override fun onDestroy() {
         bluetoothLeScanner.stopScan(scanCallback)
-        Log.i("BLE","Scan stopped ")
+        Log.i(Constants.SERVICE_TAG, "Scan stopped ")
     }
 
 
@@ -89,18 +90,18 @@ class BluetoothLeService : Service() {
                     }
                 }
                 //ensure that at least 3 beacons are found before triangulation
-                if (hashMap.size >= 3) {
+                if (hashMap.size == beacons.size) {
                     getLocation()
                 }else{
-                    Log.i("BLE","Not Enough Beacons to find location!")
+                    Log.i(Constants.SERVICE_TAG, "Not Enough Beacons to find location!")
                 }
 
-//                if (closest.second < radius) {
-//                    sendClosestDeviceBroadcast("Closest beacon ID:$closest", closest.first)
-//                    hashMap.clear()
-//                }else{
-//                    sendClosestDeviceBroadcast("Searching for nearby device....",0)
-//                }
+                if (closest.second < radius) {
+                    sendClosestDeviceBroadcast("Closest beacon ID:${closest.first}", closest.first)
+                    hashMap.clear()
+                } else {
+                    sendClosestDeviceBroadcast("Searching for nearby device....", 0)
+                }
                 mainHandler.postDelayed(this, 3000)
             }
         })
@@ -121,21 +122,25 @@ class BluetoothLeService : Service() {
 //            val current = c.findCurrentPointF()
         val current = cellTower.trilaterate()
         aggregateRoute.add(current)
-        intent.putExtra("com.kiowa.CURRENT_LOCATION", current)
+        intent.putExtra(Constants.CURRENT_LOCATION, current)
+        intent.putExtra(Constants.AGGREGATE_ROUTE, aggregateRoute)
         sendBroadcast(intent)
         hashMap.clear()
-        Log.i("BLE", "broadcast sent with location : (" + current.x + "," + current.x + ")")
+        Log.i(
+            Constants.SERVICE_TAG,
+            "broadcast sent with location : (" + current.x + "," + current.x + ")"
+        )
 
     }
 
 
-//    private fun sendClosestDeviceBroadcast(string:String, deviceName:Int){
-//        val intent = Intent("com.kgrjj.kiowa_daly_fyp.WithinRadius")
-//        intent.putExtra("com.kiowa.EXTRA_TEXT",string)
-//        intent.putExtra("DeviceName",deviceName)
-//        sendBroadcast(intent)
-//        Log.i("BLE","broadcast sent")
-//    }
+    private fun sendClosestDeviceBroadcast(string: String, deviceName: Int) {
+        val intent = Intent("com.kgrjj.kiowa_daly_fyp.WithinRadius")
+        intent.putExtra("com.kiowa.EXTRA_TEXT", string)
+        intent.putExtra("DeviceName", deviceName)
+        sendBroadcast(intent)
+        Log.i(Constants.SERVICE_TAG, "broadcast sent")
+    }
 
 
 
