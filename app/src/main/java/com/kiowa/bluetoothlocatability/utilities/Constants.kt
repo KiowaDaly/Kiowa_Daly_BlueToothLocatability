@@ -8,4 +8,6 @@ object Constants {
     const val CLOSEST_BEACON = "com.kiowa.closest_beacon"
     const val WITHIN_RADIUS = "com.kiowa.withing_radius"
     const val RESULTS = "com.kiowa.results"
+    const val BEACON_MAP = "Beacons"
+    const val FIRST_BEACON = "first_beacon"
 }
