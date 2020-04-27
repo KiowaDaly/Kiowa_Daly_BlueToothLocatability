@@ -19,10 +19,11 @@ class BluetoothLeService : Service() {
     private lateinit var bluetoothAdapter: BluetoothAdapter
     private lateinit var bluetoothLeScanner: BluetoothLeScanner
     private lateinit var beacons: HashMap<Int, BeaconScreenPoint>
-
+    var closest = Pair<Int, Double>(0, Double.MAX_VALUE)
     private val hashMap = HashMap<Int, ArrayList<Double>>()
     private val radius  = 6.0
     private val formulas = Formulas()
+
 
 
     private val aggregateRoute: ArrayList<BeaconScreenPoint> = ArrayList()
@@ -82,7 +83,7 @@ class BluetoothLeService : Service() {
         mainHandler.post(object : Runnable {
             override fun run() {
 
-                var closest = Pair<Int, Double>(0, Double.MAX_VALUE)
+
                 for((k,v) in hashMap){
                     val averageVal = v.average()
                     if (averageVal <= closest.second) {
@@ -96,13 +97,13 @@ class BluetoothLeService : Service() {
                     Log.i(Constants.SERVICE_TAG, "Not Enough Beacons to find location!")
                 }
 
-                if (closest.second < radius) {
-                    sendClosestDeviceBroadcast("Closest beacon ID:${closest.first}", closest.first)
-                    hashMap.clear()
-                } else {
-                    sendClosestDeviceBroadcast("Searching for nearby device....", 0)
-                }
-                mainHandler.postDelayed(this, 3000)
+//                if (closest.second < radius) {
+//                    sendClosestDeviceBroadcast("Closest beacon ID:${closest.first}", closest.first)
+//                    hashMap.clear()
+//                } else {
+//                    sendClosestDeviceBroadcast("Searching for nearby device....", 0)
+//                }
+                mainHandler.postDelayed(this, 6000)
             }
         })
     }
@@ -118,12 +119,13 @@ class BluetoothLeService : Service() {
             }
 //            val c = Centroid(pairs)
         val cellTower = CellTowerTrilateration(beaconData)
-        val intent = Intent("com.kgrjj.kiowa_daly_fyp.CurrentLocation")
+        val intent = Intent(Constants.RESULTS)
 //            val current = c.findCurrentPointF()
         val current = cellTower.trilaterate()
         aggregateRoute.add(current)
         intent.putExtra(Constants.CURRENT_LOCATION, current)
         intent.putExtra(Constants.AGGREGATE_ROUTE, aggregateRoute)
+        intent.putExtra(Constants.WITHIN_RADIUS, closest.first)
         sendBroadcast(intent)
         hashMap.clear()
         Log.i(
@@ -132,18 +134,6 @@ class BluetoothLeService : Service() {
         )
 
     }
-
-
-    private fun sendClosestDeviceBroadcast(string: String, deviceName: Int) {
-        val intent = Intent("com.kgrjj.kiowa_daly_fyp.WithinRadius")
-        intent.putExtra("com.kiowa.EXTRA_TEXT", string)
-        intent.putExtra("DeviceName", deviceName)
-        sendBroadcast(intent)
-        Log.i(Constants.SERVICE_TAG, "broadcast sent")
-    }
-
-
-
 
     // Callbacks
 
