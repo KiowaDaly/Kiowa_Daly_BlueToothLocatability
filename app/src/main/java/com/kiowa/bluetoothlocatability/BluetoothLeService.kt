@@ -21,16 +21,11 @@ class BluetoothLeService : Service() {
 
     var closest = Pair(0, Double.MAX_VALUE)
     private val hashMap = HashMap<Int, ArrayList<Double>>()
-    private val radius  = 6.0
     private lateinit var previousLocation: BeaconScreenPoint
     private lateinit var firstBeaconLocation: BeaconScreenPoint
     private var previousBeacon = 1
-
-
-
-
-
     private val aggregateRoute: ArrayList<BeaconScreenPoint> = ArrayList()
+
 
     override fun onBind(intent: Intent?): IBinder? {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -89,8 +84,6 @@ class BluetoothLeService : Service() {
         val mainHandler = Handler(Looper.getMainLooper())
         mainHandler.post(object : Runnable {
             override fun run() {
-
-
                 for((k,v) in hashMap){
                     val averageVal = v.average()
                     if (averageVal <= closest.second) {
@@ -103,13 +96,6 @@ class BluetoothLeService : Service() {
                 }else{
                     Log.i(Constants.SERVICE_TAG, "Not Enough Beacons to find location!")
                 }
-
-//                if (closest.second < radius) {
-//                    sendClosestDeviceBroadcast("Closest beacon ID:${closest.first}", closest.first)
-//                    hashMap.clear()
-//                } else {
-//                    sendClosestDeviceBroadcast("Searching for nearby device....", 0)
-//                }
                 mainHandler.postDelayed(this, 6000)
             }
         })
@@ -128,7 +114,7 @@ class BluetoothLeService : Service() {
         val cellTower = CellTowerTrilateration(beaconData)
         val intent = Intent(Constants.RESULTS)
 //            val current = c.findCurrentPointF()
-        val current = cellTower.trilaterate()
+        val current = cellTower.calculateLocation()
         //check if the current location is on the line
         if (!this::previousLocation.isInitialized) {
             previousLocation = firstBeaconLocation
@@ -180,7 +166,7 @@ class BluetoothLeService : Service() {
                 val n = result.device.name
                 if(n != null){
                     val name = n.toInt()
-                    Log.i("BLE_DETECTED","Beacon" + name)
+                    Log.i("BLE_DETECTED", "Beacon$name")
                     val distance = Formulas.rssiDistanceFormula(
                         result.rssi.toDouble(),
                         result.txPower.toDouble()

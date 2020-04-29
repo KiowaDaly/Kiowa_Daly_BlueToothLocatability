@@ -3,7 +3,7 @@ package com.kiowa.bluetoothlocatability.triangulationMethods
 import com.kiowa.bluetoothlocatability.utilities.BeaconData
 import com.kiowa.bluetoothlocatability.utilities.BeaconScreenPoint
 
-class Centroid(private val beacons: ArrayList<BeaconData>) {
+class Centroid(private val beacons: ArrayList<BeaconData>) : Triangulation {
 
 
 
@@ -16,7 +16,7 @@ class Centroid(private val beacons: ArrayList<BeaconData>) {
      * findCurrentPointF estimates the loaction using the centroid of each triangle in the centroid created by the beacons
      * each centroid is weighted based off distance to the beacons
      */
-    fun findCurrentPointF(): BeaconScreenPoint {
+    override fun calculateLocation(): BeaconScreenPoint {
         //TODO find the centroid based on the distances
         // FORMULA FOUND HERE : https://math.stackexchange.com/questions/90463/how-can-i-calculate-the-centroid-of-polygon
         var topX = 0.0

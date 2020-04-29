@@ -11,7 +11,7 @@ import kotlin.math.pow
  * https://www.101computing.net/cell-phone-trilateration-algorithm/
  *
  */
-class CellTowerTrilateration(private val beacons: ArrayList<BeaconData>) {
+class CellTowerTrilateration(private val beacons: ArrayList<BeaconData>) : Triangulation {
 
 
 
@@ -21,7 +21,7 @@ class CellTowerTrilateration(private val beacons: ArrayList<BeaconData>) {
      * Each of the 3 beacons have a circle surrounding them and the radius = distance from current position
      * Current location = intersection point of the 3 triangles
      */
-    fun trilaterate(): BeaconScreenPoint {
+    override fun calculateLocation(): BeaconScreenPoint {
         //region debug messages1 TODO REMOVE
         Log.i(Constants.TRILATERATION, "all beacons + distance ->\n")
         for (b in beacons) {
