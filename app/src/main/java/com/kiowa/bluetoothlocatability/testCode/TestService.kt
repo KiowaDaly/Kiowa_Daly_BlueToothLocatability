@@ -22,7 +22,7 @@ class TestService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
         bluetoothLeScanner = bluetoothAdapter.bluetoothLeScanner
-        val closestID = intent!!.getIntExtra("correct_device", 0)
+        val closestDistance = intent!!.getDoubleExtra("correct_device", 0.0)
         val settings = ScanSettings.Builder()
             .setScanMode(ScanSettings.SCAN_MODE_LOW_POWER)
             .setReportDelay(1)
