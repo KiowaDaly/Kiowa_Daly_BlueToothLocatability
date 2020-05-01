@@ -17,5 +17,6 @@
 
 
         <service android:name=".BluetoothLeService"/>
+        <service android:name=".testCode.TestService" />
     </application>
 </manifest>
