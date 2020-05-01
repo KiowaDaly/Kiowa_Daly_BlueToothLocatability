@@ -8,12 +8,13 @@ import android.os.IBinder
 import android.util.Log
 import com.kiowa.bluetoothlocatability.utilities.Constants
 import com.kiowa.bluetoothlocatability.utilities.Formulas
+import kotlin.properties.Delegates
 
 class TestService : Service() {
     private lateinit var bluetoothAdapter: BluetoothAdapter
     private lateinit var bluetoothLeScanner: BluetoothLeScanner
     private val hashMap = HashMap<Int, ArrayList<Double>>()
-
+    private var n_value by Delegates.notNull<Int>()
 
     override fun onBind(intent: Intent?): IBinder? {
         TODO("Not yet implemented")
@@ -22,10 +23,10 @@ class TestService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
         bluetoothLeScanner = bluetoothAdapter.bluetoothLeScanner
-        val closestDistance = intent!!.getDoubleExtra("correct_device", 0.0)
+        n_value = intent!!.getIntExtra("n", 2)
         val settings = ScanSettings.Builder()
             .setScanMode(ScanSettings.SCAN_MODE_LOW_POWER)
-            .setReportDelay(1)
+            .setReportDelay(0)
             .build()
 
         //set the scan to only find devices with the following names
@@ -62,7 +63,7 @@ class TestService : Service() {
                     Log.i("BLE_DETECTED", "Beacon$name")
                     val distance = Formulas.rssiDistanceFormula(
                         result.rssi.toDouble(),
-                        result.txPower.toDouble()
+                        result.txPower.toDouble(), n_value
                     )
                     if (!hashMap.containsKey(name)) {
                         hashMap[name] = ArrayList()
