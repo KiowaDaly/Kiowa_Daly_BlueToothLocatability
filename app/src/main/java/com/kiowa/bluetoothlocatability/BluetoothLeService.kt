@@ -169,7 +169,7 @@ class BluetoothLeService : Service() {
                     Log.i("BLE_DETECTED", "Beacon$name")
                     val distance = Formulas.rssiDistanceFormula(
                         result.rssi.toDouble(),
-                        result.txPower.toDouble(), 2
+                        result.txPower.toDouble(), 2.5
                     )
                     if(!hashMap.containsKey(name)){
                         hashMap[name] = ArrayList()
