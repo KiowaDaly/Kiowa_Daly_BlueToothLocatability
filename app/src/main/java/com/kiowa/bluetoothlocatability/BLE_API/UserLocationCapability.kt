@@ -15,7 +15,7 @@ class UserLocationCapability {
             val intent = Intent(".BLE_API.BluetoothLeService")
             intent.putExtra(Constants.BEACON_MAP, beacons)
             intent.putExtra(Constants.FIRST_BEACON, beacon1)
-            startService(intent)
+            //startService(intent)
         }
     }
 }
