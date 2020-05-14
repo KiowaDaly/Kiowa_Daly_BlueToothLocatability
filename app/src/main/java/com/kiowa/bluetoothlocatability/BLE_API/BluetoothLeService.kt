@@ -1,8 +1,9 @@
-package com.kiowa.bluetoothlocatability
+package com.kiowa.bluetoothlocatability.BLE_API
 
 import android.app.Service
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.le.*
+import android.content.Context
 import android.content.Intent
 import android.os.Handler
 import android.os.IBinder
@@ -26,7 +27,16 @@ class BluetoothLeService : Service() {
     private var previousBeacon = 1
     private val aggregateRoute: ArrayList<BeaconScreenPoint> = ArrayList()
 
-
+    fun startSystem(
+        context: Context,
+        beacons: HashMap<Int, BeaconScreenPoint>,
+        beacon1: BeaconScreenPoint
+    ) {
+        val intent = Intent(".BLE_API.BluetoothLeService")
+        intent.putExtra(Constants.BEACON_MAP, beacons)
+        intent.putExtra(Constants.FIRST_BEACON, beacon1)
+        startService(intent)
+    }
     override fun onBind(intent: Intent?): IBinder? {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
@@ -44,7 +54,7 @@ class BluetoothLeService : Service() {
         Log.i("BLE","Service accessed")
         Log.i("BLE", "Attempting to start scan")
 
-        beaconHelperRoutes = BeaconShapes(beacons)
+        //  beaconHelperRoutes = BeaconShapes(beacons)
         for((k,v) in beacons){
             Log.i("BLE BEACONS", "Beacon" + k + " -> (" + v.x + "," + v.y + ")")
         }
@@ -115,27 +125,28 @@ class BluetoothLeService : Service() {
         val intent = Intent(Constants.RESULTS)
 //            val current = c.findCurrentPointF()
         val current = cellTower.calculateLocation()
+        Log.i("RESULTS", current.toString())
         //check if the current location is on the line
-        if (!this::previousLocation.isInitialized) {
-            previousLocation = firstBeaconLocation
-        } else {
-            for (triple in beaconHelperRoutes.getAggregateLines()) {
-                if (triple.first == previousBeacon) {
-                    if (triple.third.isOnApproximateLine(current)) {
-                        previousLocation = current
-                        aggregateRoute.add(current)
-                    }
-                }
-            }
-        }
+//        if (!this::previousLocation.isInitialized) {
+//            previousLocation = firstBeaconLocation
+//        } else {
+//            for (triple in beaconHelperRoutes.getAggregateLines()) {
+//                if (triple.first == previousBeacon) {
+//                    if (triple.third.isOnApproximateLine(current)) {
+//                        previousLocation = current
+//                        aggregateRoute.add(current)
+//                    }
+//                }
+//            }
+//        }
 
-        intent.putExtra(Constants.CURRENT_LOCATION, previousLocation)
-        intent.putExtra(Constants.AGGREGATE_ROUTE, aggregateRoute)
-        if (closest.second <= 6.0) {
-            intent.putExtra(Constants.WITHIN_RADIUS, closest.first)
-        }
-
-        sendBroadcast(intent)
+//        intent.putExtra(Constants.CURRENT_LOCATION, previousLocation)
+//        intent.putExtra(Constants.AGGREGATE_ROUTE, aggregateRoute)
+//        if (closest.second <= 6.0) {
+//            intent.putExtra(Constants.WITHIN_RADIUS, closest.first)
+//        }
+//
+//        sendBroadcast(intent)
         hashMap.clear()
         Log.i(
             Constants.SERVICE_TAG,
@@ -169,7 +180,7 @@ class BluetoothLeService : Service() {
                     Log.i("BLE_DETECTED", "Beacon$name")
                     val distance = Formulas.rssiDistanceFormula(
                         result.rssi.toDouble(),
-                        result.txPower.toDouble(), 2.5
+                        result.txPower.toDouble(), 2.0
                     )
                     if(!hashMap.containsKey(name)){
                         hashMap[name] = ArrayList()

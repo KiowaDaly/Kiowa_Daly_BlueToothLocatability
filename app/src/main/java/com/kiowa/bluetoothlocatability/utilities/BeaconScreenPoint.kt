@@ -6,5 +6,8 @@ class BeaconScreenPoint(x_val: Double, y_val: Double) : Serializable {
     val x = x_val
     val y = y_val
 
+    override fun toString(): String {
+        return "($x,$y)"
+    }
 
 }

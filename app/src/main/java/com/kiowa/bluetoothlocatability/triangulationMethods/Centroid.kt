@@ -17,13 +17,10 @@ class Centroid(private val beacons: ArrayList<BeaconData>) : Triangulation {
      * each centroid is weighted based off distance to the beacons
      */
     override fun calculateLocation(): BeaconScreenPoint {
-        //TODO find the centroid based on the distances
         // FORMULA FOUND HERE : https://math.stackexchange.com/questions/90463/how-can-i-calculate-the-centroid-of-polygon
         var topX = 0.0
         var bottom = 0.0
         var topY = 0.0
-
-
 
         for (b in beacons) {
             topX += (b.coordinates.x * b.distance)
