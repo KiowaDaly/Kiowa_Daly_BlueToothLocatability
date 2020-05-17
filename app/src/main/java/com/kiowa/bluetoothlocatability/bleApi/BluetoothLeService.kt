@@ -1,9 +1,8 @@
-package com.kiowa.bluetoothlocatability.BLE_API
+package com.kiowa.bluetoothlocatability.bleApi
 
 import android.app.Service
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.le.*
-import android.content.Context
 import android.content.Intent
 import android.os.Handler
 import android.os.IBinder
@@ -26,17 +25,9 @@ class BluetoothLeService : Service() {
     private lateinit var firstBeaconLocation: BeaconScreenPoint
     private var previousBeacon = 1
     private val aggregateRoute: ArrayList<BeaconScreenPoint> = ArrayList()
+    private lateinit var nameFilters: ArrayList<String>
 
-    fun startSystem(
-        context: Context,
-        beacons: HashMap<Int, BeaconScreenPoint>,
-        beacon1: BeaconScreenPoint
-    ) {
-        val intent = Intent(".BLE_API.BluetoothLeService")
-        intent.putExtra(Constants.BEACON_MAP, beacons)
-        intent.putExtra(Constants.FIRST_BEACON, beacon1)
-        startService(intent)
-    }
+
     override fun onBind(intent: Intent?): IBinder? {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
@@ -50,6 +41,8 @@ class BluetoothLeService : Service() {
             (intent?.getSerializableExtra(Constants.BEACON_MAP) as HashMap<Int, BeaconScreenPoint>)
         firstBeaconLocation =
             (intent.getSerializableExtra(Constants.FIRST_BEACON) as BeaconScreenPoint)
+        nameFilters = (intent.getStringArrayListExtra(Constants.DEVICE_NAMES) as ArrayList<String>)
+
         //region debug messages TODO remove
         Log.i("BLE","Service accessed")
         Log.i("BLE", "Attempting to start scan")
@@ -66,18 +59,15 @@ class BluetoothLeService : Service() {
             .setReportDelay(1)
             .build()
 
-        //set the scan to only find devices with the following names
-        val filters = arrayListOf<ScanFilter>(
-            ScanFilter.Builder().setDeviceName("1").build(),
-            ScanFilter.Builder().setDeviceName("2").build(),
-            ScanFilter.Builder().setDeviceName("3").build(),
-            ScanFilter.Builder().setDeviceName("4").build(),
-            ScanFilter.Builder().setDeviceName("5").build()
-        )
+        //use the device names given by the user of the service as filters
+        val filters = ArrayList<ScanFilter>()
+        for (s in nameFilters) {
+            filters.add(ScanFilter.Builder().setDeviceName(s).build())
+        }
 
         //begin scanning
         bluetoothLeScanner.startScan(filters,settings,scanCallback)
-        //simultaneously find the closest beacon
+        //simultaneously find the closest beacon every few seconds
         findClosest()
 
         return START_STICKY
@@ -158,6 +148,12 @@ class BluetoothLeService : Service() {
     // Callbacks
 
     /**
+     *     ScanCallback -> this method repeatedly scans the area for bluetooth connections.
+     *     The filters used when setting up the scan prevent it from finding non-intended devices
+     *     When a device is found -> get its distance and store it in a HashMap that has each device
+     *     and their approximate distances contained in an ArrayList.
+     *
+     *
      *
      */
     private val scanCallback = object : ScanCallback() {
@@ -167,10 +163,6 @@ class BluetoothLeService : Service() {
             Log.i("BLE_DETECTED",result.device.name)
         }
 
-        /**
-         * Function retrieves scan results, makes sure that they don't have null names
-         * and then stores them in a hashmap with the distance as value
-         */
         override fun onBatchScanResults(results: List<ScanResult>) {
             super.onBatchScanResults(results)
             for (result: ScanResult in results){
@@ -195,10 +187,6 @@ class BluetoothLeService : Service() {
             Log.i("BLE_SCAN","failed")
         }
     }
-
-    /**
-     *
-     */
 
 
 }

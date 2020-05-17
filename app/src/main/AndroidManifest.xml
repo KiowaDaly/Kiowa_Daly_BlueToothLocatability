@@ -15,9 +15,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <service
-            android:name=".BLE_API.MyIntentService"
+            android:name=".bleApi.MyIntentService"
             android:exported="false"></service>
-        <service android:name=".BLE_API.BluetoothLeService" />
+        <service android:name=".bleApi.BluetoothLeService" />
         <service android:name=".testCode.TestService" />
     </application>
 

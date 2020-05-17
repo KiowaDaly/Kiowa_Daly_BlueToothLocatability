@@ -10,4 +10,5 @@ object Constants {
     const val RESULTS = "com.kiowa.results"
     const val BEACON_MAP = "Beacons"
     const val FIRST_BEACON = "first_beacon"
+    const val DEVICE_NAMES = "device_names"
 }
