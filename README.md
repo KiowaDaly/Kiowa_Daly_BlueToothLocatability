@@ -17,8 +17,13 @@ Within your build.gradle file insert the following
     
     the results found from these broadcasts recieved are to be used by your disgretion.
 
-### Calling on the service
-To start the baacgkround service ensure that you have a HashMap<Integer,BeaconScreenPoint> that stores the coordinates of each beacon and an integer denoting the beacon ID.
+### **Calling on the service**
+
+To start the bacgkround service ensure that you have a HashMap<Integer,BeaconScreenPoint> that stores the coordinates of each beacon and an integer denoting the beacon ID.
+
+
 Have a list of the devices names, which will be used for filtering results during a scan.
+
+
 Call upon the static function: 
          UserLocationCapability.Companion.startSystem(context,HashMap, ClosestBeaconScreenPoint,device_names_list);
