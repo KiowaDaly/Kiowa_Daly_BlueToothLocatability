@@ -10,6 +10,7 @@ import com.kiowa.bluetoothlocatability.utilities.Constants
 import com.kiowa.bluetoothlocatability.utilities.Formulas
 import kotlin.properties.Delegates
 
+//test service
 class TestService : Service() {
     private lateinit var bluetoothAdapter: BluetoothAdapter
     private lateinit var bluetoothLeScanner: BluetoothLeScanner
@@ -19,6 +20,7 @@ class TestService : Service() {
     override fun onBind(intent: Intent?): IBinder? {
         TODO("Not yet implemented")
     }
+
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
