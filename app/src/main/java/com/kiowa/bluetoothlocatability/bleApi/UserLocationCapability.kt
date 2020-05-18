@@ -14,7 +14,7 @@ class UserLocationCapability {
             beacon1: BeaconScreenPoint,
             deviceNameFilters: ArrayList<String>
         ) {
-            val intent = Intent(".BLE_API.BluetoothLeService")
+            val intent = Intent(context, BluetoothLeService::class.java)
             intent.putExtra(Constants.BEACON_MAP, beacons)
             intent.putExtra(Constants.FIRST_BEACON, beacon1)
             intent.putExtra(Constants.DEVICE_NAMES, deviceNameFilters)

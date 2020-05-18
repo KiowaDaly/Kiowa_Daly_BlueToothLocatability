@@ -38,18 +38,21 @@ class BluetoothLeService : Service() {
 
         @Suppress("UNCHECKED_CAST")
         beacons =
-            (intent?.getSerializableExtra(Constants.BEACON_MAP) as HashMap<Int, BeaconScreenPoint>)
+            intent?.getSerializableExtra(Constants.BEACON_MAP) as HashMap<Int, BeaconScreenPoint>
         firstBeaconLocation =
             (intent.getSerializableExtra(Constants.FIRST_BEACON) as BeaconScreenPoint)
         nameFilters = (intent.getStringArrayListExtra(Constants.DEVICE_NAMES) as ArrayList<String>)
+
+        beaconHelperRoutes = BeaconShapes(beacons)
 
         //region debug messages TODO remove
         Log.i("BLE","Service accessed")
         Log.i("BLE", "Attempting to start scan")
 
-        //  beaconHelperRoutes = BeaconShapes(beacons)
+
         for((k,v) in beacons){
             Log.i("BLE BEACONS", "Beacon" + k + " -> (" + v.x + "," + v.y + ")")
+
         }
         /* endregion */
 
@@ -86,6 +89,7 @@ class BluetoothLeService : Service() {
             override fun run() {
                 for((k,v) in hashMap){
                     val averageVal = v.average()
+                    Log.i("Clostest val avg test", averageVal.toString())
                     if (averageVal <= closest.second) {
                         closest = closest.copy(first = k, second = averageVal)
                     }
@@ -107,36 +111,40 @@ class BluetoothLeService : Service() {
         //added this for change
             for((k,v) in hashMap){
                 if (beacons.containsKey(k)) {
+                    Log.i("AVERAGE ARRAY", v.toArray().toString())
                     beaconData.add(BeaconData(k, beacons[k]!!, v.average()))
                 }
             }
-//            val c = Centroid(pairs)
-        val cellTower = CellTowerTrilateration(beaconData)
-        val intent = Intent(Constants.RESULTS)
-//            val current = c.findCurrentPointF()
-        val current = cellTower.calculateLocation()
-        Log.i("RESULTS", current.toString())
-        //check if the current location is on the line
-//        if (!this::previousLocation.isInitialized) {
-//            previousLocation = firstBeaconLocation
-//        } else {
-//            for (triple in beaconHelperRoutes.getAggregateLines()) {
-//                if (triple.first == previousBeacon) {
-//                    if (triple.third.isOnApproximateLine(current)) {
-//                        previousLocation = current
-//                        aggregateRoute.add(current)
-//                    }
-//                }
-//            }
-//        }
 
-//        intent.putExtra(Constants.CURRENT_LOCATION, previousLocation)
-//        intent.putExtra(Constants.AGGREGATE_ROUTE, aggregateRoute)
-//        if (closest.second <= 6.0) {
-//            intent.putExtra(Constants.WITHIN_RADIUS, closest.first)
-//        }
-//
-//        sendBroadcast(intent)
+
+        val cellTower = CellTowerTrilateration(beaconData)
+
+
+        val intent = Intent(Constants.RESULTS)
+        val current = cellTower.calculateLocation()
+
+
+        //check if the current location is on the line
+        if (!this::previousLocation.isInitialized) {
+            previousLocation = firstBeaconLocation
+        } else {
+            for (triple in beaconHelperRoutes.getAggregateLines()) {
+                if (triple.first == previousBeacon) {
+                    if (triple.third.isOnApproximateLine(current)) {
+                        previousLocation = current
+                        aggregateRoute.add(current)
+                    }
+                }
+            }
+        }
+
+        intent.putExtra(Constants.CURRENT_LOCATION, previousLocation)
+        intent.putExtra(Constants.AGGREGATE_ROUTE, aggregateRoute)
+        if (closest.second <= 6.0) {
+            intent.putExtra(Constants.WITHIN_RADIUS, closest.first)
+        }
+
+        sendBroadcast(intent)
         hashMap.clear()
         Log.i(
             Constants.SERVICE_TAG,
@@ -172,7 +180,7 @@ class BluetoothLeService : Service() {
                     Log.i("BLE_DETECTED", "Beacon$name")
                     val distance = Formulas.rssiDistanceFormula(
                         result.rssi.toDouble(),
-                        result.txPower.toDouble(), 2.0
+                        result.txPower.toDouble(), 2.2
                     )
                     if(!hashMap.containsKey(name)){
                         hashMap[name] = ArrayList()

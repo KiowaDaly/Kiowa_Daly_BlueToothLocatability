@@ -18,18 +18,20 @@ class BeaconShapes(beacons: HashMap<Int, BeaconScreenPoint>) {
                         )
                     )
                 )
-            }
-            val one = myList[i].first
-            val two = myList[i + 1].first
-            aggregateLines.add(
-                Triple(
-                    one, two,
-                    Formulas.getLine(
-                        beacons[one]!!,
-                        beacons[two]!!
+            } else {
+                val one = myList[i].first
+                val two = myList[i + 1].first
+                aggregateLines.add(
+                    Triple(
+                        one, two,
+                        Formulas.getLine(
+                            beacons[one]!!,
+                            beacons[two]!!
+                        )
                     )
                 )
-            )
+            }
+
         }
     }
 
